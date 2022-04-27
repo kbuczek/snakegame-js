@@ -5,9 +5,10 @@ const ROWS = 20;
 const COLUMNS = 20;
 const CELL_SIZE = 25;
 
-let cells = new Map();
-let nonEmptyKeys = new Set();
+let cells = new Map(); //divs
+let cellsValues = new Map();
 let interval;
+let foodKey = generateFood();
 
 let SNAKE_HEAD = "10-10";
 let SNAKE_DIRECTION = "R";
@@ -34,17 +35,59 @@ function initializeGameBoard() {
   }
 }
 
-function generateFood() {}
+function isInBounds([row, col]) {
+  if (row < 0 || col < 0) {
+    return false;
+  }
+  if (row >= ROWS || col >= COLS) {
+    return false;
+  }
+  return true;
+}
 
-function renderFrame() {
+function generateFood() {
+  return toKey(
+    Math.floor(Math.random() * ROWS),
+    Math.floor(Math.random() * COLUMNS)
+  );
+}
+
+function prepareCellsValues() {
+  //add food
+  cellsValues.set(foodKey, "food");
+  //move snake
+  cellsValues.set(SNAKE_HEAD, "snake");
   let [row, col] = fromKey(SNAKE_HEAD);
-  const cell = cells.get(SNAKE_HEAD);
-  cell.style.backgroundColor = "Chartreuse";
-  cell.style.borderRadius = "7px";
-  cell.style.border = "0.5px solid black";
   [row, col] = moveSnakeInDirection(row, col);
-  console.log(row, col);
   SNAKE_HEAD = toKey(row, col);
+}
+
+function displayCellsValues() {
+  for (let i = 0; i < ROWS; i++) {
+    for (let j = 0; j < COLUMNS; j++) {
+      let key = toKey(i, j);
+      let cellValue = cellsValues.get(key);
+      let cell = cells.get(key);
+
+      switch (cellValue) {
+        case "food":
+          //   cell.style.backgroundColor = "white";
+          //   cell.style.borderRadius = "50px";
+          cell.textContent = "🍎";
+          break;
+        case "snake":
+          cell.style.backgroundColor = "Chartreuse";
+          cell.style.borderRadius = "7px";
+          cell.style.border = "1px solid black";
+          break;
+      }
+    }
+  }
+}
+
+function tick() {
+  prepareCellsValues();
+  displayCellsValues();
 }
 
 function moveSnakeInDirection(row, col) {
@@ -94,7 +137,7 @@ window.addEventListener("keydown", (e) => {
 function startGame() {
   initializeGameBoard();
   score.textContent = "0";
-  interval = setInterval(renderFrame, 300);
+  interval = setInterval(tick, 300);
 }
 
 function endGame() {
