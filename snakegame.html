@@ -4,6 +4,7 @@
 </head>
 <body>
   <h1>🐍 Snake game JavaScript 🐍</h1>
+  <div id="score-container">score: <span id="score"></span></div>
   <div id="canvas"></div>
   <script src="snakegame.js"></script>
   <style>
@@ -22,10 +23,17 @@
     #canvas {
       width: 500px;
       height: 500px;
+      border: 1px solid white;
       /* position: relative; */
-      /* box-sizing: content-box; */
+      box-sizing: content-box;
     }
-    h1 {
+    #score-container {
+      margin-bottom: 5px;
+      font-size: 1rem;
+    }
+    h1,
+    div,
+    span {
       color: white;
     }
   </style>
