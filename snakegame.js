@@ -9,9 +9,12 @@ let cells = new Map(); //divs
 let cellsValues = new Map();
 let interval;
 let foodKey = generateFood();
+let gameScore = 0;
 
 let SNAKE_HEAD = "10-10";
-let SNAKE_DIRECTION = "R";
+let SNAKE_DIRECTION = "left";
+let SNAKE_LENGTH = 3;
+let SNAKE_BODY = ["10-11", "10-12"];
 
 function toKey(row, col) {
   return row + "-" + col;
@@ -39,7 +42,7 @@ function isInBounds([row, col]) {
   if (row < 0 || col < 0) {
     return false;
   }
-  if (row >= ROWS || col >= COLS) {
+  if (row >= ROWS || col >= COLUMNS) {
     return false;
   }
   return true;
@@ -50,44 +53,6 @@ function generateFood() {
     Math.floor(Math.random() * ROWS),
     Math.floor(Math.random() * COLUMNS)
   );
-}
-
-function prepareCellsValues() {
-  //add food
-  cellsValues.set(foodKey, "food");
-  //move snake
-  cellsValues.set(SNAKE_HEAD, "snake");
-  let [row, col] = fromKey(SNAKE_HEAD);
-  [row, col] = moveSnakeInDirection(row, col);
-  SNAKE_HEAD = toKey(row, col);
-}
-
-function displayCellsValues() {
-  for (let i = 0; i < ROWS; i++) {
-    for (let j = 0; j < COLUMNS; j++) {
-      let key = toKey(i, j);
-      let cellValue = cellsValues.get(key);
-      let cell = cells.get(key);
-
-      switch (cellValue) {
-        case "food":
-          //   cell.style.backgroundColor = "white";
-          //   cell.style.borderRadius = "50px";
-          cell.textContent = "🍎";
-          break;
-        case "snake":
-          cell.style.backgroundColor = "Chartreuse";
-          cell.style.borderRadius = "7px";
-          cell.style.border = "1px solid black";
-          break;
-      }
-    }
-  }
-}
-
-function tick() {
-  prepareCellsValues();
-  displayCellsValues();
 }
 
 function moveSnakeInDirection(row, col) {
@@ -108,28 +73,104 @@ function moveSnakeInDirection(row, col) {
   return [row, col];
 }
 
+function eatFood() {
+  if (SNAKE_HEAD === foodKey) {
+    gameScore++;
+    let foodCell = cells.get(foodKey);
+    foodCell.textContent = "";
+    cellsValues.delete(foodKey);
+    foodKey = generateFood();
+  }
+}
+
+function prepareCellsValues() {
+  cellsValues.set(foodKey, "food"); //add food
+  eatFood();
+  //prepare snake
+  cellsValues.set(SNAKE_HEAD, "snake-head");
+  SNAKE_BODY.forEach((item) => {
+    cellsValues.set(item, "snake-body");
+  });
+
+  console.log(SNAKE_BODY);
+  SNAKE_BODY.unshift(SNAKE_HEAD);
+  const lastSnakeBodyKey = SNAKE_BODY.pop();
+  cellsValues.delete(lastSnakeBodyKey);
+
+  let [row, col] = fromKey(SNAKE_HEAD);
+  [row, col] = moveSnakeInDirection(row, col);
+  SNAKE_HEAD = toKey(row, col);
+}
+
+function renderCellsValues() {
+  for (let i = 0; i < ROWS; i++) {
+    for (let j = 0; j < COLUMNS; j++) {
+      let key = toKey(i, j);
+      let cellValue = cellsValues.get(key);
+      let cell = cells.get(key);
+
+      cell.textContent = "";
+      cell.style.backgroundColor = "";
+      cell.style.border = "";
+
+      switch (cellValue) {
+        case "food":
+          cell.textContent = "🍎";
+          break;
+        case "snake-body":
+          cell.style.backgroundColor = "#4a9400";
+          cell.style.borderRadius = "7px";
+          cell.style.border = "1px solid black";
+          break;
+        case "snake-head":
+          cell.style.backgroundColor = "Chartreuse";
+          cell.style.borderRadius = "7px";
+          cell.style.border = "1px solid black";
+          break;
+        default:
+          cell.textContent = "";
+          break;
+      }
+    }
+  }
+}
+
+function tick() {
+  prepareCellsValues();
+  renderCellsValues();
+  score.textContent = gameScore;
+}
+
 window.addEventListener("keydown", (e) => {
-  e.preventDefault();
+  // e.preventDefault();
   switch (e.key) {
     case "ArrowUp":
     case "w":
     case "W":
-      SNAKE_DIRECTION = "up";
+      if (SNAKE_DIRECTION !== "down") {
+        SNAKE_DIRECTION = "up";
+      }
       break;
     case "ArrowRight":
     case "d":
     case "D":
-      SNAKE_DIRECTION = "right";
+      if (SNAKE_DIRECTION !== "left") {
+        SNAKE_DIRECTION = "right";
+      }
       break;
     case "ArrowDown":
     case "s":
     case "S":
-      SNAKE_DIRECTION = "down";
+      if (SNAKE_DIRECTION !== "up") {
+        SNAKE_DIRECTION = "down";
+      }
       break;
     case "ArrowLeft":
     case "a":
     case "A":
-      SNAKE_DIRECTION = "left";
+      if (SNAKE_DIRECTION !== "right") {
+        SNAKE_DIRECTION = "left";
+      }
       break;
   }
 });
@@ -137,7 +178,7 @@ window.addEventListener("keydown", (e) => {
 function startGame() {
   initializeGameBoard();
   score.textContent = "0";
-  interval = setInterval(tick, 300);
+  interval = setInterval(tick, 150);
 }
 
 function endGame() {
