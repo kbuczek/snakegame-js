@@ -13,8 +13,9 @@ let gameScore = 0;
 
 let SNAKE_HEAD = "10-10";
 let SNAKE_DIRECTION = "left";
-let SNAKE_LENGTH = 3;
-let SNAKE_BODY = ["10-11", "10-12"];
+let SNAKE_LENGTH = 4;
+let SNAKE_ENLARGE = false;
+let SNAKE_BODY = ["10-11", "10-12", "10-13", "10-14"];
 
 function toKey(row, col) {
   return row + "-" + col;
@@ -49,6 +50,7 @@ function isInBounds([row, col]) {
 }
 
 function generateFood() {
+  //check snake head and body overlap
   return toKey(
     Math.floor(Math.random() * ROWS),
     Math.floor(Math.random() * COLUMNS)
@@ -76,26 +78,39 @@ function moveSnakeInDirection(row, col) {
 function eatFood() {
   if (SNAKE_HEAD === foodKey) {
     gameScore++;
+    // SNAKE_LENGTH++;
+    SNAKE_ENLARGE = true;
     let foodCell = cells.get(foodKey);
     foodCell.textContent = "";
     cellsValues.delete(foodKey);
     foodKey = generateFood();
+    cellsValues.set(foodKey, "food");
+  }
+}
+
+function snakeCollision() {
+  const cellValue = cellsValues.get(SNAKE_HEAD);
+  if (cellValue === "snake-body") {
+    endGame();
   }
 }
 
 function prepareCellsValues() {
-  cellsValues.set(foodKey, "food"); //add food
+  snakeCollision();
   eatFood();
-  //prepare snake
+
+  //snake logic
   cellsValues.set(SNAKE_HEAD, "snake-head");
   SNAKE_BODY.forEach((item) => {
     cellsValues.set(item, "snake-body");
   });
 
-  console.log(SNAKE_BODY);
   SNAKE_BODY.unshift(SNAKE_HEAD);
-  const lastSnakeBodyKey = SNAKE_BODY.pop();
-  cellsValues.delete(lastSnakeBodyKey);
+  if (!SNAKE_ENLARGE) {
+    const lastSnakeBodyKey = SNAKE_BODY.pop();
+    cellsValues.delete(lastSnakeBodyKey);
+  }
+  SNAKE_ENLARGE = false;
 
   let [row, col] = fromKey(SNAKE_HEAD);
   [row, col] = moveSnakeInDirection(row, col);
@@ -177,12 +192,13 @@ window.addEventListener("keydown", (e) => {
 
 function startGame() {
   initializeGameBoard();
-  score.textContent = "0";
+  cellsValues.set(foodKey, "food"); //add first food
   interval = setInterval(tick, 150);
 }
 
 function endGame() {
   clearInterval(interval);
+  console.log("GAME OVER");
 }
 
 startGame();
