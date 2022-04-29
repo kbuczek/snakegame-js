@@ -1,5 +1,6 @@
-let canvas = document.getElementById("canvas");
-let score = document.getElementById("score");
+const canvas = document.getElementById("canvas");
+const score = document.getElementById("score");
+const message = document.getElementById("message");
 
 const ROWS = 20;
 const COLUMNS = 20;
@@ -10,10 +11,10 @@ let cellsValues = new Map();
 let interval;
 let foodKey = generateFood();
 let gameScore = 0;
+let key_pressed = false;
 
 let SNAKE_HEAD = "10-10";
 let SNAKE_DIRECTION = "left";
-let SNAKE_LENGTH = 4;
 let SNAKE_ENLARGE = false;
 let SNAKE_BODY = ["10-11", "10-12", "10-13", "10-14"];
 
@@ -51,6 +52,7 @@ function isInBounds([row, col]) {
 
 function generateFood() {
   //check snake head and body overlap
+  // const newFoodKey
   return toKey(
     Math.floor(Math.random() * ROWS),
     Math.floor(Math.random() * COLUMNS)
@@ -75,31 +77,26 @@ function moveSnakeInDirection(row, col) {
   return [row, col];
 }
 
-function eatFood() {
-  if (SNAKE_HEAD === foodKey) {
-    gameScore++;
-    // SNAKE_LENGTH++;
-    SNAKE_ENLARGE = true;
-    let foodCell = cells.get(foodKey);
-    foodCell.textContent = "";
-    cellsValues.delete(foodKey);
-    foodKey = generateFood();
-    cellsValues.set(foodKey, "food");
-  }
-}
-
 function snakeCollision() {
   const cellValue = cellsValues.get(SNAKE_HEAD);
   if (cellValue === "snake-body") {
     endGame();
   }
+  if (cellValue === "food") {
+    gameScore++;
+    SNAKE_ENLARGE = true;
+    cellsValues.delete(foodKey);
+    foodKey = generateFood();
+    cellsValues.set(foodKey, "food");
+  }
+  console.log(fromKey(SNAKE_HEAD));
+  if (!isInBounds(fromKey(SNAKE_HEAD))) {
+    console.log("AAA");
+    endGame();
+  }
 }
 
-function prepareCellsValues() {
-  snakeCollision();
-  eatFood();
-
-  //snake logic
+function snakeLogic() {
   cellsValues.set(SNAKE_HEAD, "snake-head");
   SNAKE_BODY.forEach((item) => {
     cellsValues.set(item, "snake-body");
@@ -115,6 +112,11 @@ function prepareCellsValues() {
   let [row, col] = fromKey(SNAKE_HEAD);
   [row, col] = moveSnakeInDirection(row, col);
   SNAKE_HEAD = toKey(row, col);
+}
+
+function prepareCellsValues() {
+  snakeCollision();
+  snakeLogic();
 }
 
 function renderCellsValues() {
@@ -154,51 +156,55 @@ function tick() {
   prepareCellsValues();
   renderCellsValues();
   score.textContent = gameScore;
+  key_pressed = false;
 }
 
 window.addEventListener("keydown", (e) => {
   // e.preventDefault();
-  switch (e.key) {
-    case "ArrowUp":
-    case "w":
-    case "W":
-      if (SNAKE_DIRECTION !== "down") {
-        SNAKE_DIRECTION = "up";
-      }
-      break;
-    case "ArrowRight":
-    case "d":
-    case "D":
-      if (SNAKE_DIRECTION !== "left") {
-        SNAKE_DIRECTION = "right";
-      }
-      break;
-    case "ArrowDown":
-    case "s":
-    case "S":
-      if (SNAKE_DIRECTION !== "up") {
-        SNAKE_DIRECTION = "down";
-      }
-      break;
-    case "ArrowLeft":
-    case "a":
-    case "A":
-      if (SNAKE_DIRECTION !== "right") {
-        SNAKE_DIRECTION = "left";
-      }
-      break;
+  if (!key_pressed) {
+    key_pressed = true;
+    switch (e.key) {
+      case "ArrowUp":
+      case "w":
+      case "W":
+        if (SNAKE_DIRECTION !== "down") {
+          SNAKE_DIRECTION = "up";
+        }
+        break;
+      case "ArrowRight":
+      case "d":
+      case "D":
+        if (SNAKE_DIRECTION !== "left") {
+          SNAKE_DIRECTION = "right";
+        }
+        break;
+      case "ArrowDown":
+      case "s":
+      case "S":
+        if (SNAKE_DIRECTION !== "up") {
+          SNAKE_DIRECTION = "down";
+        }
+        break;
+      case "ArrowLeft":
+      case "a":
+      case "A":
+        if (SNAKE_DIRECTION !== "right") {
+          SNAKE_DIRECTION = "left";
+        }
+        break;
+    }
   }
 });
 
 function startGame() {
   initializeGameBoard();
   cellsValues.set(foodKey, "food"); //add first food
-  interval = setInterval(tick, 150);
+  interval = setInterval(tick, 100);
 }
 
 function endGame() {
   clearInterval(interval);
-  console.log("GAME OVER");
+  message.style.display = "flex";
 }
 
 startGame();
