@@ -20,11 +20,11 @@ let SNAKE_ENLARGE;
 let SNAKE_BODY;
 
 function toKey(row, col) {
-  return row + "-" + col;
+  return row + "/" + col;
 }
 
 function fromKey(key) {
-  return key.split("-").map(Number);
+  return key.split("/").map(Number);
 }
 
 function initializeGameBoard() {
@@ -97,6 +97,7 @@ function snakeCollision() {
     foodKey = generateFood();
     cellsValues.set(foodKey, "food");
   }
+  console.log(SNAKE_HEAD);
   console.log(fromKey(SNAKE_HEAD));
   if (!isInBounds(fromKey(SNAKE_HEAD))) {
     endGame();
@@ -205,7 +206,7 @@ window.addEventListener("keydown", (e) => {
 
 function resetValues() {
   if (!cells) {
-    cells = new Map(); //divs
+    cells = new Map();
     initializeGameBoard();
   }
 
@@ -213,9 +214,9 @@ function resetValues() {
   foodKey = generateFood();
   gameScore = 0;
 
-  SNAKE_HEAD = "10-10";
+  SNAKE_HEAD = "10/10";
   SNAKE_DIRECTION = "left";
-  SNAKE_BODY = ["10-11", "10-12", "10-13", "10-14"];
+  SNAKE_BODY = ["10/11", "10/12", "10/13", "10/14"];
 }
 
 function startGame() {
