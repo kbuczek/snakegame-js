@@ -204,7 +204,11 @@ window.addEventListener("keydown", (e) => {
 });
 
 function resetValues() {
-  cells = new Map(); //divs
+  if (!cells) {
+    cells = new Map(); //divs
+    initializeGameBoard();
+  }
+
   cellsValues = new Map();
   foodKey = generateFood();
   gameScore = 0;
@@ -215,8 +219,8 @@ function resetValues() {
 }
 
 function startGame() {
+  message.style.display = "none";
   resetValues();
-  initializeGameBoard();
   cellsValues.set(foodKey, "food"); //add first food
   interval = setInterval(tick, 100);
 }
