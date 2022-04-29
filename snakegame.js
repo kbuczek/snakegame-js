@@ -1,22 +1,23 @@
 const canvas = document.getElementById("canvas");
 const score = document.getElementById("score");
 const message = document.getElementById("message");
+const resetButton = document.getElementById("reset");
 
 const ROWS = 20;
 const COLUMNS = 20;
 const CELL_SIZE = 25;
 
-let cells = new Map(); //divs
-let cellsValues = new Map();
+let cells; //divs
+let cellsValues;
 let interval;
-let foodKey = generateFood();
-let gameScore = 0;
+let foodKey;
+let gameScore;
 let key_pressed = false;
 
-let SNAKE_HEAD = "10-10";
-let SNAKE_DIRECTION = "left";
-let SNAKE_ENLARGE = false;
-let SNAKE_BODY = ["10-11", "10-12", "10-13", "10-14"];
+let SNAKE_HEAD;
+let SNAKE_DIRECTION;
+let SNAKE_ENLARGE;
+let SNAKE_BODY;
 
 function toKey(row, col) {
   return row + "-" + col;
@@ -51,12 +52,19 @@ function isInBounds([row, col]) {
 }
 
 function generateFood() {
-  //check snake head and body overlap
-  // const newFoodKey
-  return toKey(
-    Math.floor(Math.random() * ROWS),
-    Math.floor(Math.random() * COLUMNS)
-  );
+  let newFoodKey;
+  let badFoodPosition = true;
+  while (badFoodPosition) {
+    newFoodKey = toKey(
+      Math.floor(Math.random() * ROWS),
+      Math.floor(Math.random() * COLUMNS)
+    );
+    if (cellsValues.get(newFoodKey) === undefined) {
+      badFoodPosition = false;
+    }
+  }
+
+  return newFoodKey;
 }
 
 function moveSnakeInDirection(row, col) {
@@ -91,7 +99,6 @@ function snakeCollision() {
   }
   console.log(fromKey(SNAKE_HEAD));
   if (!isInBounds(fromKey(SNAKE_HEAD))) {
-    console.log("AAA");
     endGame();
   }
 }
@@ -196,7 +203,19 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
+function resetValues() {
+  cells = new Map(); //divs
+  cellsValues = new Map();
+  foodKey = generateFood();
+  gameScore = 0;
+
+  SNAKE_HEAD = "10-10";
+  SNAKE_DIRECTION = "left";
+  SNAKE_BODY = ["10-11", "10-12", "10-13", "10-14"];
+}
+
 function startGame() {
+  resetValues();
   initializeGameBoard();
   cellsValues.set(foodKey, "food"); //add first food
   interval = setInterval(tick, 100);
@@ -205,6 +224,7 @@ function startGame() {
 function endGame() {
   clearInterval(interval);
   message.style.display = "flex";
+  resetButton.onclick = startGame;
 }
 
 startGame();
